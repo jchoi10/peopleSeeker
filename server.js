@@ -244,3 +244,201 @@ addRole = () => {
         });
     });
 };
+
+addEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: 'What is the employees first name?',
+            validate: addFirstName => {
+                if (addFirstName) {
+                    return true;
+                } else {
+                    console.log('Please enter a first name!');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: 'What is the employees last name?',
+            validate: addLastName => {
+                if (addLastName) {
+                    return true;
+                } else {
+                    console.log('Please enter a last name!');
+                    return false;
+                }
+            }
+        }
+    ])
+    .then(answer => {
+        const params = [answer.addFirstName, answer.addLastName]
+        const roleTable = `SELECT role.id, role.title FROM role`;
+
+        connection.query(roleTable, (err, data) => {
+            if (err) throw err;
+
+            const roleTable = data.map(({id, title}) => ({name: title, value: id}));
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: 'What is the employees role?',
+                    choices: roles
+                }
+            ])
+            .then(rolePick => {
+                const role = rolePick.role;
+                params.push(role);
+
+                const managerTable = `SELECT * FROM employee`;
+
+                connection.query(managerTable, (err, data) => {
+                    if (err) throw err;
+
+                    const managers = data.map(({id, first_name, last_name}) => ({name: first_name + ' ' + last_name, value: id}));
+
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'manager',
+                            message: 'who is the employees manager?',
+                            choice: managers
+                        }
+                    ])
+                    .then(managerPick => {
+                        const manager = managerPick.manager;
+                        params.push(manager);
+
+                        const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+
+                        connection.query(sql, params, (err, result) => {
+                            if (err) throw err;
+                            console.log('Employee has been added to the list!')
+                            
+                            showEmployees();
+                        });
+                    });
+                });
+            });
+        });
+    });
+};
+
+updateEmployee = () => {
+    const employeeTable = `SELECT * FROM employee`;
+
+    connection.query(employeeTable, (err, data) => {
+        if (err) throw err;
+
+        const employees = data.map(({id, first_name, last_name}) => ({name: first_name + ' ' + last_name, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: 'which employee would you liek to modify?',
+                choices: employees
+            }
+        ])
+        .then(employeePick => {
+            const employee = employeePick.name;
+            const params = [];
+            params.push(employee);
+
+            const roleTable = `SELECT * FROM role`;
+
+            connection.query(roleTable, (err, data) => {
+                if (err) throw err;
+
+                const roles = data.map(({id, title}) => ({name: title, value: id}));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: 'What is the employees new role?',
+                        choices: roles
+                    }
+                ])
+                .then(rolePick => {
+                    const role = rolePick.role;
+                    params.push(role);
+
+                    let employee = params[0];
+                    params[0] = role
+                    params[1] = employee
+
+                    const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+
+                    connection.query(sql, params, (err, result) => {
+                        if (err) throw err;
+                        showEmployees();
+                    });
+                });
+            });
+        });
+    });
+};
+
+updateManager = () => {
+    const employeeTable = `SELECT * FROM employee`;
+
+    connection.query(employeeTable, (err, data) => {
+        if (err) throw err;
+
+        const employees = data.map(({id, first_name, last_name}) => ({name: first_name + ' ' + last_name, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: 'Which employee would you like to update?',
+                choices: employees
+            }
+        ])
+        .then(employeePick => {
+            const employee = employeePick.name;
+            const params = [];
+            params.push(employee);
+
+            const managerTable = `SELECT * FROM employee`;
+
+            connection.query(managerTable, (err, data) => {
+                if (err) throw err;
+
+                const managers = data.map(({id, first_name, last_name}) => ({name: first_name + ' ' + last_name, value: id}));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'manager',
+                        message: 'Who is the employees manager?',
+                        choices: managers
+                    }
+                ])
+                .then(managerPick => {
+                    const manager = managerPick.manager;
+                    params.push(manager);
+
+                    let employee = params[0]
+                    params[0] = manager
+                    params[1] = employee
+
+                    const sql = `UPDATE employee SET manager_id = ? WHERE id = ?`;
+
+                    connection.query(sql, params, (err, result) => {
+                        if (err) throw err;
+                        console.log('employee has been updated!');
+
+                        showEmployees();
+                    });
+                });
+            });
+        });
+    });
+};
