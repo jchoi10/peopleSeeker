@@ -1,8 +1,6 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const consoleTable = require('console.table');
-const { connect } = require('http2');
-const { allowedNodeEnvironmentFlags } = require('process');
 
 require('dotenv').config();
 
@@ -92,21 +90,21 @@ const promptUser = () => {
 };
 
 showDepartment = () => {
-    console.log('Getting ready to show all departments...' + '/n');
+    console.log('Getting ready to show all departments...\n');
     const sql = `SELECT department.id AS id, department.name AS department FROM department`;
 
-    connection.promise().query(sql, (err, rows) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        console.table(rows);
+        console.table(response);
         promptUser();
     });
 };
 
 showRoles = () => {
-    console.log('Getting ready to show all roles...' + '/n');
+    console.log('Getting ready to show all roles...' + '\n');
     const sql = `SELECT role.id, role.title, department.name AS department FROM role INNER JOIN department ON role.department_id = department.id`;
 
-    connection.promise().query(sql, (err, rows) => {
+    connection.query(sql, (err, rows) => {
         if (err) throw err;
         console.table(rows);
         promptUser();
@@ -115,5 +113,32 @@ showRoles = () => {
 
 showEmployees = () => {
     console.log('Getting ready to show all employees...' + '/n');
+    const sql = `SELECT 
+                employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary,
+                CONCAT (manager.first_name, " ", manager.last_name) AS manager
+                FROM employee
+                LEFT JOIN role ON employee.role_id = role.id
+                LEFT JOIN department ON role.department_id = department.id
+                LEFT JOIN employee manager ON employee.manager_id = manager.id`;
 
-}
+    connection.query(sql, (err, rows) => {
+        if (err) throw err;
+        console.table(rows);
+        promptUser();
+    });
+};
+
+showBudget = () => {
+    console.log('Getting ready to show budget...' +'\n');
+    const sql = `SELECT department_id AS id,
+                    department.name AS department,
+                    SUM(salary) AS budget
+                FROM role
+                JOIN department ON role.department_id = department.id GROUP BY department_id`;
+
+    connection.query(sql, (err, rows) => {
+        if(err) throw err;
+        console.table(rows);
+        promptUser();
+    });
+};
