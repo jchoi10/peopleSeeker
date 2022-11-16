@@ -1,10 +1,12 @@
 # peopleSeeker
+- ![MIT license badge](https://img.shields.io/badge/license-mit-blue)
 - Managing database through mysql2.
 
 
 ## Demo Video Google Drive Link
 
 - [https://drive.google.com/file/d/1qL06X9ZAW0E_6_n1gMyqBsfOJvmbFz6b/view?usp=sharing](https://drive.google.com/file/d/1qL06X9ZAW0E_6_n1gMyqBsfOJvmbFz6b/view?usp=sharing)
+- [Demo Video](./assets/peopleSeeker_Demo.mov) 
 
 ## Result HTML Screenshot
 
