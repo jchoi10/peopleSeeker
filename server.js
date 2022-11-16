@@ -442,3 +442,94 @@ updateManager = () => {
         });
     });
 };
+
+deleteDepartment = () => {
+    const departTable = `SELECT * FROM department`;
+
+    connection.query(departTable, (err, data) => {
+        if (err) throw err;
+
+        const depart = data.map(({name, id}) => ({name: name, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'depart',
+                message: 'What department do you want to delete',
+                choice: depart
+            }
+        ])
+        .then(departPick => {
+            const depart = departPick.depart;
+            const sql = `DELETE FROM department WHERE id = ?`;
+
+            connection.query(sql, depart, (err, result) => {
+                if (err) throw err;
+                console.log('Deleted!');
+
+                showDepartment();
+            });
+        });
+    });
+};
+
+deleteRole = () => {
+    const roleTable = `SELECT * FROM role`;
+
+    connection.query(roleTable, (err, data) => {
+        if (err) throw err;
+
+        const role = data.map(({title, id}) => ({name: title, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: 'What role do you want to delete?',
+                choices: role
+            }
+        ])
+        .then(roleTable => {
+            const role = roleTable.role;
+            const sql = `DELETE FROM role WHERE id = ?`;
+
+            connection.query(sql, role, (err, result) => {
+                if (err) throw err;
+                console.log('Deleted!');
+
+                showRoles();
+            });
+        });
+    });
+};
+
+deleteEmployee = () => {
+    const employeeTable = `SELECT * FROM employee`;
+
+    connection.query(employeeTable, (err, data) => {
+        if (err) throw err;
+
+        const employees = data.map(({id, first_name, last_name}) => ({name: first_name + ' ' + last_name, value: id}));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: 'Which employee would you like to delete?',
+                choices: employees
+            }
+        ])
+        .then(employeePick => {
+            const employee = employeePick.name;
+
+            const sql = `DELETE FROM employee WHERE id = ?`;
+
+            connection.query(sql, employee, (err, result) => {
+                if (err) throw err;
+                console.log('Deleted!');
+
+                showEmployees();
+            });
+        });
+    });
+};
